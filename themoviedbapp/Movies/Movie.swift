@@ -5,7 +5,7 @@
 //  Created by Jhoan Gordillo Franco on 2/07/21.
 //
 
-import Foundation
+import UIKit
 
 // MARK: - PopularMoviesResponse
 struct PopularMoviesResponse: Codable {
@@ -63,4 +63,9 @@ struct MovieDetail: Codable {
         case id
         case overview
     }
+}
+
+struct MovieDetailEntity {
+    let movie: MovieDetail
+    let img: UIImage?
 }

@@ -39,4 +39,59 @@ class MoviesService {
             }
         }.resume()
     }
+    
+    func getMovieDetail(movieId: Int, _ callback: @escaping (MovieDetail?, Error?) -> Void) {
+        let url = URL(string: "\(baseUrl)/movie/\(movieId)?api_key=\(apiKey)&language=en-US")!
+        
+        URLSession.shared.dataTask(with: url) { (data, response, error) in
+                                   
+            if let error = error {
+                callback(nil, error)
+                print(error.localizedDescription)
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else  {
+                callback(nil, error)
+                return
+            }
+            
+            if let data = data,
+               let movie = try? JSONDecoder().decode(MovieDetail.self, from: data) {
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
+                    //callback(movie,nil)
+                }
+            }
+        }.resume()
+    }
+    
+    
+    func fetchImageData(imgId: String, _ callback: @escaping (Data?, Error?) -> Void) {
+        let url = URL(string: "https://image.tmdb.org/t/p/w500/"+imgId)!
+        
+        URLSession.shared.dataTask(with: url) { (data, response, error) in
+            if let error = error {
+                callback(nil, error)
+                print(error.localizedDescription)
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode)  else {
+                callback(nil, error)
+                return
+            }
+            
+            print(httpResponse.statusCode)
+            
+            
+            if  let data = data {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
+//                    callback(data,nil)
+                }
+                
+            }
+        }.resume()
+    }
 }

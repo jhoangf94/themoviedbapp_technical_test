@@ -28,7 +28,7 @@ class ListMoviesViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let vc = segue.destination as? MovieDetailViewController, let selectedMovie = sender as? Movie {
-            vc.movieId = "\(selectedMovie.id)"
+            vc.movieId = selectedMovie.id
         }
     }
     

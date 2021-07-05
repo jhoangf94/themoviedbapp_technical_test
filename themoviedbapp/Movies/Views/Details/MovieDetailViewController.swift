@@ -13,18 +13,17 @@ class MovieDetailViewController: UIViewController {
     @IBOutlet weak var textMovieDescription: UITextView!
     @IBOutlet weak var labelMovieDescriptionTitle: UILabel!
     @IBOutlet weak var loadinIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var imgLoadigIndicator: UIActivityIndicatorView!
     @IBOutlet weak var buttonView: UIView!
     
-    var movieId: String! {
-        didSet{
-            fetchPopularMovies()
-        }
-    }
+    private let presenter = MovieDetailPresenter(service: MoviesService())
+    var movieId: Int!
     var movie: MovieDetail!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        toggleViewData(hide: true)
+        presenter.setViewDelegate(view: self)
+        presenter.loadMovieDetail(movieId: movieId)
     }
     
     func toggleViewData(hide: Bool) {
@@ -40,69 +39,42 @@ class MovieDetailViewController: UIViewController {
         }
     }
     
-    func setupMovieDetailView(movie: MovieDetail) {
-        textMovieDescription.text = movie.overview
-        labelMovieDescriptionTitle.text = movie.originalTitle
-        fetchImageData(url: movie.backdropPath)
+    func setupMovieDetailView(movie: MovieDetailEntity) {
+        textMovieDescription.text = movie.movie.overview
+        labelMovieDescriptionTitle.text = movie.movie.originalTitle
+    }
+}
+
+extension MovieDetailViewController: MovieDetailViewDelegate {
+    func loadingImg() {
+        imgLoadigIndicator.isHidden = false
     }
     
-    func fetchImageData(url: String) {
-        let url = URL(string: "https://image.tmdb.org/t/p/w500/"+url)!
-        
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode)  else {
-                return
-            }
-            
-            print(httpResponse.statusCode)
-            
-            
-            if  let data = data {
-                DispatchQueue.main.sync {
-                    self.headerMovieImage.image = UIImage(data: data)
-                }
-                
-            }
-            
-        }.resume()
+    func imgLoaded(img: UIImage) {
+        headerMovieImage.image = img
+        imgLoadigIndicator.stopAnimating()
+        headerMovieImage.isHidden = false
     }
     
-    func fetchPopularMovies() {
-        let url = URL(string: "https://api.themoviedb.org/3/movie/\(movieId ?? "")?api_key=722ee383461b05037f58d4c09e1bd11a&language=en-US")!
+    func displayMovie(movie: MovieDetailEntity) {
+        imgLoadigIndicator.startAnimating()
+        setupMovieDetailView(movie: movie)
+        toggleViewData(hide: false)
+    }
+    
+    func loadingMovie() {
+        toggleViewData(hide: true)
+    }
+    
+    func displayError(message: String) {
+        loadinIndicator.stopAnimating()
+        let alert = UIAlertController(title: "Oops", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func displayEmptyView() {
         
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return
-            }
-            
-            if !(200...299).contains(httpResponse.statusCode) {
-                print(httpResponse.statusCode)
-            }
-            
-            
-            if let data = data,
-               let response = try? JSONDecoder().decode(MovieDetail.self, from: data) {
-                
-                self.movie = response
-                
-                DispatchQueue.main.sync {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        self.toggleViewData(hide: false)
-                        self.setupMovieDetailView(movie: response)
-                    }
-                }
-            }
-            
-            
-        }.resume()
     }
     
     
