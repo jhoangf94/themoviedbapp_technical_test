@@ -16,7 +16,7 @@ class MoviesService {
         
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             
-                       
+            
             if let error = error {
                 callback(nil, error)
                 print(error.localizedDescription)
@@ -30,7 +30,7 @@ class MoviesService {
             
             if let data = data,
                let response = try? JSONDecoder().decode(PopularMoviesResponse.self, from: data) {
-
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     //callback([], nil)
                     
@@ -44,7 +44,7 @@ class MoviesService {
         let url = URL(string: "\(baseUrl)/movie/\(movieId)?api_key=\(apiKey)&language=en-US")!
         
         URLSession.shared.dataTask(with: url) { (data, response, error) in
-                                   
+            
             if let error = error {
                 callback(nil, error)
                 print(error.localizedDescription)
@@ -58,10 +58,10 @@ class MoviesService {
             
             if let data = data,
                let movie = try? JSONDecoder().decode(MovieDetail.self, from: data) {
-
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
-                    //callback(movie,nil)
+                    //callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
+                    callback(movie,nil)
                 }
             }
         }.resume()
@@ -87,8 +87,8 @@ class MoviesService {
             
             if  let data = data {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
-//                    callback(data,nil)
+                    //callback( nil, NSError(domain: "app", code: 100, userInfo: nil))
+                    callback(data,nil)
                 }
                 
             }
